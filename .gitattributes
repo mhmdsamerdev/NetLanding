@@ -1,0 +1,13 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Windows scripts keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Make repository language stats reflect backend (Python-first project)
+frontend/** linguist-vendored
+
+# Treat docs as documentation in language stats
+*.md linguist-documentation
+docs/** linguist-documentation
