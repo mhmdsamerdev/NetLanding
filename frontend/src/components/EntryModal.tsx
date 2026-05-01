@@ -11,8 +11,9 @@ import { useToast } from '@/components/ui/toast'
 interface EntryModalProps {
   open: boolean
   entry?: Entry | null
+  initialSources?: Source[]
   onClose: () => void
-  onSaved: () => void
+  onSaved: (entry: Entry) => void
 }
 
 const emptyPayload = (): EntryPayload => ({
@@ -45,7 +46,7 @@ function Field({ label, children, required }: { label: string; children: React.R
   )
 }
 
-export default function EntryModal({ open, entry, onClose, onSaved }: EntryModalProps) {
+export default function EntryModal({ open, entry, initialSources, onClose, onSaved }: EntryModalProps) {
   const { toast } = useToast()
   const [form, setForm] = useState<EntryPayload>(emptyPayload())
   const [sources, setSources] = useState<Source[]>([])
@@ -56,7 +57,11 @@ export default function EntryModal({ open, entry, onClose, onSaved }: EntryModal
 
   useEffect(() => {
     if (!open) return
-    sourcesApi.list().then(r => setSources(r.data))
+    if (initialSources && initialSources.length > 0) {
+      setSources(initialSources)
+    } else {
+      sourcesApi.list().then(r => setSources(r.data))
+    }
     banksApi.list().then(r => setBanks(r.data))
     if (entry) {
       setForm({
@@ -130,14 +135,15 @@ export default function EntryModal({ open, entry, onClose, onSaved }: EntryModal
     if (!form.gross_amount || form.gross_amount <= 0) { toast('Gross amount must be > 0', 'error'); return }
     setSaving(true)
     try {
+      let result: { data: Entry }
       if (entry) {
-        await entriesApi.update(entry.id, form)
+        result = await entriesApi.update(entry.id, form)
         toast('Entry updated')
       } else {
-        await entriesApi.create(form)
+        result = await entriesApi.create(form)
         toast('Entry created')
       }
-      onSaved()
+      onSaved(result.data)
       onClose()
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail

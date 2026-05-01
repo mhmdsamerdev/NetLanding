@@ -80,8 +80,8 @@ export default function Entries() {
   const handleDelete = async (entry: Entry) => {
     try {
       await entriesApi.delete(entry.id)
+      setEntries(prev => prev.filter(e => e.id !== entry.id))
       toast('Entry deleted')
-      load()
     } catch {
       toast('Failed to delete entry', 'error')
     }
@@ -249,8 +249,15 @@ export default function Entries() {
       <EntryModal
         open={modalOpen}
         entry={editEntry}
+        initialSources={sources}
         onClose={() => { setModalOpen(false); setEditEntry(null) }}
-        onSaved={load}
+        onSaved={(saved) => {
+          setEntries(prev =>
+            prev.some(e => e.id === saved.id)
+              ? prev.map(e => e.id === saved.id ? saved : e)
+              : [saved, ...prev]
+          )
+        }}
       />
 
       <ConfirmDialog
