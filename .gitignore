@@ -36,13 +36,12 @@ build/
 pip-wheel-metadata/
 
 # Backend local data
-backend/*.db
-backend/*.sqlite
-backend/*.sqlite3
-backend/netlanding.db
+*.db
+*.sqlite
+*.sqlite3
 
 # Frontend / Node / Vite
-frontend/node_modules/
+node_modules/
 frontend/dist/
 frontend/.vite/
 frontend/.cache/

@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Search, Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react'
 import { entriesApi, sourcesApi } from '@/lib/api'
 import type { Entry, Source } from '@/lib/api'
 import { formatCurrency, formatDate, statusColor, STATUSES } from '@/lib/utils'
@@ -13,6 +13,18 @@ import EntryModal from '@/components/EntryModal'
 import { useToast } from '@/components/ui/toast'
 
 const PAGE_SIZE = 20
+
+type SortKey = 'project_client_name' | 'source' | 'gross_amount' | 'net_income' | 'status' | 'date_received'
+type SortDir = 'asc' | 'desc'
+
+const SORT_COLS: { label: string; key: SortKey; defaultDir: SortDir }[] = [
+  { label: 'Project / Client', key: 'project_client_name', defaultDir: 'asc' },
+  { label: 'Source',           key: 'source',              defaultDir: 'asc' },
+  { label: 'Gross',            key: 'gross_amount',        defaultDir: 'desc' },
+  { label: 'Net',              key: 'net_income',          defaultDir: 'desc' },
+  { label: 'Status',           key: 'status',              defaultDir: 'asc' },
+  { label: 'Date Received',    key: 'date_received',       defaultDir: 'desc' },
+]
 
 export default function Entries() {
   const { toast } = useToast()
@@ -29,6 +41,17 @@ export default function Entries() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editEntry, setEditEntry] = useState<Entry | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Entry | null>(null)
+  const [sortKey, setSortKey] = useState<SortKey>('date_received')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
+
+  const handleSort = (col: typeof SORT_COLS[number]) => {
+    if (sortKey === col.key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(col.key)
+      setSortDir(col.defaultDir)
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -64,7 +87,26 @@ export default function Entries() {
     }
   }
 
-  const paginated = entries.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const sortedEntries = useMemo(() => {
+    return [...entries].sort((a, b) => {
+      let av: string | number
+      let bv: string | number
+      switch (sortKey) {
+        case 'project_client_name': av = a.project_client_name.toLowerCase(); bv = b.project_client_name.toLowerCase(); break
+        case 'source':              av = (a.source?.name ?? '').toLowerCase(); bv = (b.source?.name ?? '').toLowerCase(); break
+        case 'gross_amount':        av = a.gross_amount;  bv = b.gross_amount;  break
+        case 'net_income':          av = a.net_income;    bv = b.net_income;    break
+        case 'status':              av = a.status.toLowerCase(); bv = b.status.toLowerCase(); break
+        case 'date_received':       av = a.date_received ?? ''; bv = b.date_received ?? ''; break
+        default: return 0
+      }
+      if (av < bv) return sortDir === 'asc' ? -1 : 1
+      if (av > bv) return sortDir === 'asc' ? 1 : -1
+      return 0
+    })
+  }, [entries, sortKey, sortDir])
+
+  const paginated = sortedEntries.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const totalPages = Math.ceil(entries.length / PAGE_SIZE)
 
   return (
@@ -109,11 +151,25 @@ export default function Entries() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/[0.06]">
-              {['Project / Client', 'Source', 'Gross', 'Net', 'Status', 'Date Received', ''].map(h => (
-                <th key={h} className="text-left text-[10px] uppercase tracking-widest text-zinc-600 px-4 py-3 font-normal">
-                  {h}
+              {SORT_COLS.map(col => (
+                <th
+                  key={col.key}
+                  className="text-left text-[10px] uppercase tracking-widest px-4 py-3 font-normal cursor-pointer select-none"
+                  onClick={() => handleSort(col)}
+                >
+                  <span className={`inline-flex items-center gap-1 transition-colors ${
+                    sortKey === col.key ? 'text-zinc-300' : 'text-zinc-600 hover:text-zinc-400'
+                  }`}>
+                    {col.label}
+                    {sortKey === col.key
+                      ? (sortDir === 'asc'
+                          ? <ChevronUp size={10} className="shrink-0" />
+                          : <ChevronDown size={10} className="shrink-0" />)
+                      : <ChevronDown size={10} className="shrink-0 opacity-25" />}
+                  </span>
                 </th>
               ))}
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
