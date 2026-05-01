@@ -126,23 +126,26 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Available overdue warning */}
-      {data.available_overdue_amount > 0 && data.available_overdue_days > 2 && (
-        <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/20 rounded-lg px-4 py-3">
+      {/* Expiry warnings */}
+      {data.expiry_warnings.map((w, i) => (
+        <div key={i} className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/20 rounded-lg px-4 py-3">
           <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="text-xs text-amber-300 font-medium">
-              {formatCurrency(data.available_overdue_amount, cur)} has been available for {data.available_overdue_days} days — consider withdrawing
+              <span className="text-amber-200">{w.label}</span>
+              {' '}({formatCurrency(w.net, w.currency)}) expires on{' '}
+              {new Date(w.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+              {' '}Withdraw or use it before it lapses.
             </p>
             <button
-              onClick={() => navigate('/entries?status=Available')}
+              onClick={() => navigate('/entries')}
               className="text-[11px] text-amber-500 underline underline-offset-2 mt-1 hover:text-amber-400 transition-colors"
             >
               Review entries ↗
             </button>
           </div>
         </div>
-      )}
+      ))}
 
       {/* Fees card */}
       <div className="bg-[#161616] border border-white/[0.07] rounded-xl p-4">

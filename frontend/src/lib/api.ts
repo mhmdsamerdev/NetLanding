@@ -82,6 +82,7 @@ export interface DashboardData {
   base_currency: string
   available_overdue_amount: number
   available_overdue_days: number
+  expiry_warnings: { date: string; net: number; currency: string; label: string }[]
 }
 
 export interface Settings {

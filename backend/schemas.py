@@ -96,6 +96,13 @@ class SettingsUpdate(BaseModel):
     base_currency: str
 
 
+class ExpiryWarning(BaseModel):
+    date: date
+    net: float
+    currency: str
+    label: str
+
+
 class PerSourceBreakdown(BaseModel):
     source_name: str
     total_gross: float
@@ -132,3 +139,4 @@ class DashboardOut(BaseModel):
     base_currency: str
     available_overdue_amount: float
     available_overdue_days: int
+    expiry_warnings: list["ExpiryWarning"] = []

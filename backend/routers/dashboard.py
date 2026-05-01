@@ -36,6 +36,7 @@ def get_dashboard(db: Session = Depends(get_db)):
     available_overdue_amount = 0.0
     available_overdue_days = 0
     oldest_available_date = None
+    expiring_entries: list[dict] = []
 
     for e in all_entries:
         gross = e.gross_amount or 0
@@ -84,6 +85,15 @@ def get_dashboard(db: Session = Depends(get_db)):
                     oldest_available_date = check_date
                     available_overdue_days = days_waiting
 
+        if e.date_expiry and e.status in ("Pending", "Available") and e.date_expiry >= date.today():
+            if (e.date_expiry - date.today()).days <= 30:
+                expiring_entries.append({
+                    "date": e.date_expiry,
+                    "net": net,
+                    "currency": e.gross_currency or "USD",
+                    "label": e.project_client_name,
+                })
+
     per_source = [
         schemas.PerSourceBreakdown(
             source_name=name,
@@ -127,4 +137,8 @@ def get_dashboard(db: Session = Depends(get_db)):
         base_currency=base_currency,
         available_overdue_amount=round(available_overdue_amount, 2),
         available_overdue_days=available_overdue_days,
+        expiry_warnings=[
+            schemas.ExpiryWarning(date=w["date"], net=round(w["net"], 2), currency=w["currency"], label=w["label"])
+            for w in sorted(expiring_entries, key=lambda x: x["date"])
+        ],
     )
