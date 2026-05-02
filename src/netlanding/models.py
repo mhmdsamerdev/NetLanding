@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from sqlalchemy import Column, Integer, String, Float, Date, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -9,7 +9,7 @@ class Source(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, nullable=False, unique=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     entries = relationship("Entry", back_populates="source")
 
@@ -19,7 +19,7 @@ class BankAccount(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, nullable=False, unique=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     entries = relationship("Entry", back_populates="bank_account")
 
@@ -44,8 +44,8 @@ class Entry(Base):
     date_cleared = Column(Date, nullable=True)
     invoice_ref = Column(String, nullable=True)
     notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     source = relationship("Source", back_populates="entries")
     bank_account = relationship("BankAccount", back_populates="entries")

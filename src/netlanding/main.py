@@ -4,14 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from .database import engine
-from . import models
+from . import models, __version__
 from .routers import entries, sources, banks, settings, dashboard
 
 STATIC_DIR = Path(__file__).parent / "static"
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="NetLanding API", version="1.0.0")
+app = FastAPI(title="NetLanding API", version=__version__)
 
 app.add_middleware(
     CORSMiddleware,

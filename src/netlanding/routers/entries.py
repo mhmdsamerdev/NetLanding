@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -106,7 +106,7 @@ def update_entry(entry_id: int, payload: schemas.EntryUpdate, db: Session = Depe
     for key, value in update_data.items():
         setattr(entry, key, value)
 
-    entry.updated_at = datetime.utcnow()
+    entry.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(entry)
     return entry_to_out(entry)
