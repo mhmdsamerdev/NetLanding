@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# ---------------------------------------------------------------------------
+# Project metadata  (PEP 621)
+# ---------------------------------------------------------------------------
+[project]
+name = "netlanding"
+version = "0.1.0"
+description = "A locally hosted income tracker for freelancers — track gross income and all pre-bank deductions."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+keywords = ["income", "freelance", "tracker", "finance", "fastapi", "self-employed"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+]
+dependencies = [
+    "fastapi==0.111.0",
+    "uvicorn[standard]==0.29.0",
+    "sqlalchemy==2.0.30",
+    "pydantic==2.7.1",
+    "python-dateutil==2.9.0",
+    "httpx==0.27.0",
+    "aiofiles>=23.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/mhmdsamer-dev/NetLanding"
+Repository = "https://github.com/mhmdsamer-dev/NetLanding"
+Issues = "https://github.com/mhmdsamer-dev/NetLanding/issues"
+Changelog = "https://github.com/mhmdsamer-dev/NetLanding/releases"
+
+# ---------------------------------------------------------------------------
+# CLI entry point
+# ---------------------------------------------------------------------------
+[project.scripts]
+netlanding = "netlanding.__main__:main"
+
+# ---------------------------------------------------------------------------
+# Hatchling build configuration
+# ---------------------------------------------------------------------------
+[tool.hatch.build.targets.wheel]
+packages = ["src/netlanding"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/",
+    "LICENSE",
+    "README.md",
+    "pyproject.toml",
+]

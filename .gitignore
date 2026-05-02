@@ -62,3 +62,9 @@ frontend/.env.*
 # IDE
 .idea/
 .vs/
+
+# Python packaging / build
+*.whl
+MANIFEST
+.hatch/
+__pypackages__/
