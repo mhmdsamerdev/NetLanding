@@ -68,3 +68,6 @@ frontend/.env.*
 MANIFEST
 .hatch/
 __pypackages__/
+
+# My Habits
+.vibe/

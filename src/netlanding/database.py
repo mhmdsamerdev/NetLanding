@@ -1,7 +1,20 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+import os
+from pathlib import Path
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./netlanding.db"
+# ── Locally-saved Data root ──────────────────────────────────────────────────────────────────
+DATA_DIR: Path = Path(
+    os.environ.get("NETLANDING_DATA_DIR", Path.home() / ".netlanding")
+).expanduser().resolve()
+
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+# ── Database ───────────────────────────────────────────────────────────────────
+SQLALCHEMY_DATABASE_URL: str = os.environ.get(
+    "NETLANDING_DB_URL",
+    f"sqlite:///{DATA_DIR / 'netlanding.db'}",
+)
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,

@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 # ---------------------------------------------------------------------------
 [project]
 name = "netlanding"
-version = "0.1.0"
+version = "0.1.1"
 description = "A locally hosted income tracker for freelancers — track gross income and all pre-bank deductions."
 readme = "README.md"
 license = { file = "LICENSE" }
