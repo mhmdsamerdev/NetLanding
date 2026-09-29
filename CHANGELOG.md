@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 
+- Tagging `vX.Y.Z` runs tests, checks the frontend build, publishes to PyPI and creates the GitHub release (GitHub Actions).
 - The frontend build is checked (content hash) and rebuilt when stale on `netlanding` start from a checkout and on every `uv build`/`python -m build`.
 - Income sources can store a usual fee (%) and days to clear.
 - Automatic database snapshots and JSON/CSV export (Settings, CLI).

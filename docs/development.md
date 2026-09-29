@@ -102,13 +102,20 @@ netlanding backup | backups | export   # data safety (see src/netlanding/backup.
 # flags: --port, --host, --no-browser, --log, --version
 ```
 
-### 4. Upload to PyPI
+### 4. Release (GitHub + PyPI, automated)
 
-```bash
-pip install twine # one-time installation
-twine check dist/*
-twine upload dist/*
-```
+1. Bump `version` in `pyproject.toml` and commit.
+2. `git tag vX.Y.Z && git push origin main --tags`
+
+`.github/workflows/release.yml` then checks the tag matches the version, runs the tests, verifies the
+frontend build is up to date, builds the package, publishes to PyPI (Trusted Publishing) and creates
+the GitHub release with the artifacts and generated notes. `ci.yml` runs the tests and the frontend
+check on every push/PR.
+
+One-time setup: add a trusted publisher on PyPI (repo `mhmdsamerdev/NetLanding`, workflow
+`release.yml`, environment `pypi`) and create the `pypi` environment in the GitHub repo settings.
+
+Manual fallback: `twine check dist/* && twine upload dist/*`.
 
 ---
 
