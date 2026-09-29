@@ -4,6 +4,7 @@ All notable changes to NetLanding. Release notes on GitHub are taken from the ma
 
 ## [Unreleased]
 
+## v0.2.0 - 2026-09-29
 
 - Tagging `vX.Y.Z` runs tests, checks the frontend build, publishes to PyPI and creates the GitHub release (GitHub Actions).
 - The frontend build is checked (content hash) and rebuilt when stale on `netlanding` start from a checkout and on every `uv build`/`python -m build`.
