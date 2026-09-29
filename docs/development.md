@@ -119,6 +119,7 @@ All backend logic lives exclusively in `src/netlanding/`:
 | `schemas.py` | Pydantic request/response schemas |
 | `routers/` | One file per resource (`entries`, `sources`, `banks`, `settings`, `dashboard`, `data`) |
 | `backup.py` | Snapshots via the sqlite3 backup API, integrity check, retention |
+| `importer.py` | Import/restore: parse JSON export or SQLite snapshot, preview, merge/replace in one transaction |
 | `export.py` | JSON (versioned, `format`/`version` fields) and CSV export |
 
 Use **relative imports** throughout (`from .database import ...`, `from .. import models`).

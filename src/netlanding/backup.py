@@ -11,7 +11,7 @@ KEEP_DAILY_DAYS = 30   # then newest per day up to this age
                        # beyond that: newest per month
 INTERVAL = timedelta(hours=24)
 
-_NAME_RE = re.compile(r"^netlanding-\d{8}-\d{6}(-[a-z]+)?\.db$")
+_NAME_RE = re.compile(r"^netlanding-\d{8}-\d{6}(-[a-z]+)?(-\d+)?\.db$")
 
 
 def backups_dir() -> Path:
@@ -39,7 +39,12 @@ def create_snapshot(reason: str = "") -> Path:
     if src_path is None or not src_path.exists():
         raise RuntimeError("no file-based SQLite database to back up")
     suffix = f"-{reason}" if reason else ""
-    dest = backups_dir() / f"netlanding-{datetime.now():%Y%m%d-%H%M%S}{suffix}.db"
+    stamp = f"netlanding-{datetime.now():%Y%m%d-%H%M%S}{suffix}"
+    dest = backups_dir() / f"{stamp}.db"
+    n = 1
+    while dest.exists():  # never overwrite an existing snapshot
+        n += 1
+        dest = backups_dir() / f"{stamp}-{n}.db"
     tmp = dest.with_suffix(".tmp")
     tmp.unlink(missing_ok=True)
 

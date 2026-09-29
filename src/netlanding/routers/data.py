@@ -1,11 +1,14 @@
 import json
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, Response
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from .. import backup, export
+from .. import backup, export, importer
 from ..database import get_db
 
 router = APIRouter(prefix="/api/data", tags=["data"])
@@ -52,3 +55,37 @@ def download_backup(name: str):
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Backup not found")
     return FileResponse(path, media_type="application/octet-stream", filename=name)
+
+
+# ── Import / restore ────────────────────────────────────────────────────────
+class ApplyImport(BaseModel):
+    token: str
+    mode: Literal["merge", "replace"]
+
+
+@router.post("/import/preview")
+async def import_preview(request: Request, snapshot: str | None = None, db: Session = Depends(get_db)):
+    try:
+        if snapshot:
+            data = importer.load_snapshot(snapshot)
+        else:
+            declared = int(request.headers.get("content-length") or 0)
+            if declared > importer.MAX_BYTES:
+                raise importer.ImportError_("File is too large (limit 100 MB).")
+            raw = await request.body()
+            if len(raw) > importer.MAX_BYTES:
+                raise importer.ImportError_("File is too large (limit 100 MB).")
+            data = importer.load_upload(raw)
+        result = importer.preview(data, db)
+    except importer.ImportError_ as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    result["token"] = importer.stage(data)
+    return result
+
+
+@router.post("/import/apply")
+def import_apply(payload: ApplyImport, db: Session = Depends(get_db)):
+    try:
+        return importer.apply(importer.staged(payload.token), payload.mode, db)
+    except importer.ImportError_ as exc:
+        raise HTTPException(status_code=400, detail=str(exc))

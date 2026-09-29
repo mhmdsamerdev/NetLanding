@@ -2,6 +2,7 @@
 
 
 - Automatic database snapshots and JSON/CSV export (Settings, CLI).
+- Import and restore from the UI: preview, merge or replace, with an automatic safety snapshot and Undo.
 - Cleaner CLI: quiet output with `--log` for debugging, opens the browser, detects an already-running server, and adds `netlanding stop`.
 - Custom dropdowns, date picker with fast typing, and amount inputs replace native browser controls.
 - Redesigned dashboard (month navigation, money-flow chart, timeline, withdraw list) with a new app-wide theme.

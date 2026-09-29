@@ -136,7 +136,27 @@ export interface BackupInfo {
   created_at: string
 }
 
+export interface ImportPreview {
+  token: string
+  kind: 'json' | 'sqlite'
+  exported_at: string | null
+  app_version: string | null
+  file: { entries: number; sources: number; bank_accounts: number; first_date: string | null; last_date: string | null }
+  current: { entries: number; sources: number; bank_accounts: number }
+  merge: { new: number; duplicates: number }
+}
+
+export interface ImportResult {
+  added: number
+  skipped: number
+  safety_snapshot: string | null
+}
+
 export const dataApi = {
+  previewFile: (file: File) =>
+    api.post<ImportPreview>('/data/import/preview', file, { headers: { 'Content-Type': 'application/octet-stream' } }),
+  previewSnapshot: (name: string) => api.post<ImportPreview>('/data/import/preview', null, { params: { snapshot: name } }),
+  applyImport: (token: string, mode: 'merge' | 'replace') => api.post<ImportResult>('/data/import/apply', { token, mode }),
   backups: () => api.get<{ directory: string; backups: BackupInfo[] }>('/data/backups'),
   createBackup: () => api.post<{ name: string }>('/data/backups'),
 }

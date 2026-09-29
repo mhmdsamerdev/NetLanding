@@ -12,7 +12,7 @@ A locally hosted, income tracker for self-employees. Track gross income and all 
 - **Entries** — Full table with search, status/source/date filters, inline edit & delete, paginated
 - **Entry Modal** — Real-time net income calculation, status-driven conditional fields (bank account, withdrawal/cleared dates)
 - **Settings** — Manage sources, bank accounts, base currency
-- **Backups & Export** — Automatic daily/shutdown snapshots in `~/.netlanding/backups/`, one-click JSON (full) and CSV (entries) export
+- **Backups & Export** — Automatic daily/shutdown snapshots in `~/.netlanding/backups/`, one-click JSON (full) and CSV (entries) export, and import/restore with preview, merge or replace, and Undo
 
 ## First-Time Use
 

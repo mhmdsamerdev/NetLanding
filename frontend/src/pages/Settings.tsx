@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Download, Plus, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Download, Plus, RotateCcw, Trash2, Upload } from 'lucide-react'
 import { sourcesApi, banksApi, settingsApi, dataApi } from '@/lib/api'
 import type { Source, BankAccount, BackupInfo } from '@/lib/api'
 import { CURRENCIES } from '@/lib/utils'
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { ConfirmDialog } from '@/components/ui/dialog'
 import { useToast } from '@/components/ui/toast'
+import { ImportDialog } from '@/components/ImportDialog'
 
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
@@ -39,6 +40,21 @@ export default function Settings() {
   const [backups, setBackups] = useState<BackupInfo[]>([])
   const [backupDir, setBackupDir] = useState('')
   const [backingUp, setBackingUp] = useState(false)
+  const [importSource, setImportSource] = useState<{ file: File } | { snapshot: string } | null>(null)
+  const [dragging, setDragging] = useState(false)
+  const fileInput = useRef<HTMLInputElement>(null)
+
+  const pickFile = (f?: File) => {
+    if (f) setImportSource({ file: f })
+    if (fileInput.current) fileInput.current.value = ''
+  }
+
+  const refreshAll = () => {
+    sourcesApi.list().then(r => setSources(r.data))
+    banksApi.list().then(r => setBanks(r.data))
+    settingsApi.get().then(r => setCurrency(r.data.base_currency))
+    loadBackups()
+  }
 
   const loadBackups = () =>
     dataApi.backups().then(r => {
@@ -233,6 +249,17 @@ export default function Settings() {
             {backingUp ? 'Backing up…' : 'Back up now'}
           </Button>
         </div>
+        <div
+          onClick={() => fileInput.current?.click()}
+          onDragOver={e => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={e => { e.preventDefault(); setDragging(false); pickFile(e.dataTransfer.files[0]) }}
+          className={`mb-3 flex items-center justify-center gap-2 rounded-card border border-dashed px-4 py-5 text-xs cursor-pointer transition-colors ${dragging ? 'border-accent/60 bg-white/[0.04] text-ink' : 'border-white/[0.12] text-muted hover:text-ink-2 hover:bg-white/[0.02]'}`}
+        >
+          <Upload size={14} />
+          Import — drop an export (.json) or backup (.db) here, or click to choose
+          <input ref={fileInput} type="file" accept=".json,.db,application/json" className="hidden" onChange={e => pickFile(e.target.files?.[0])} />
+        </div>
         <ListCard>
           {backups.length === 0 && <p className="px-4 py-5 text-xs text-muted">No backups yet.</p>}
           {backups.map((b, i) => (
@@ -241,13 +268,20 @@ export default function Settings() {
                 <span className="text-sm text-ink-2">{b.created_at.replace('T', ' ')}</span>
                 <span className="text-xs text-muted ml-3">{Math.max(1, Math.round(b.size / 1024))} KiB</span>
               </div>
-              <a href={`/api/data/backups/${b.name}`} download>
-                <Button size="icon" variant="ghost"><Download size={13} /></Button>
-              </a>
+              <div className="flex items-center">
+                <Button size="icon" variant="ghost" title="Restore this backup" onClick={() => setImportSource({ snapshot: b.name })}>
+                  <RotateCcw size={13} />
+                </Button>
+                <a href={`/api/data/backups/${b.name}`} download title="Download">
+                  <Button size="icon" variant="ghost"><Download size={13} /></Button>
+                </a>
+              </div>
             </div>
           ))}
         </ListCard>
       </section>
+
+      <ImportDialog source={importSource} onClose={() => setImportSource(null)} onDone={refreshAll} />
 
       <ConfirmDialog
         open={!!deleteSource}

@@ -81,3 +81,9 @@ def test_backup_endpoints_and_traversal():
         or client.get("/api/data/backups/..%2F..%2Fetc%2Fpasswd").status_code == 404
     assert not backup.is_valid_name("../../etc/passwd")
     assert not backup.is_valid_name("netlanding-20260101-000000.db/../x")
+
+
+def test_same_second_snapshots_do_not_collide():
+    a = backup.create_snapshot("preimport")
+    b = backup.create_snapshot("preimport")
+    assert a != b and a.exists() and b.exists() and backup.is_valid_name(b.name)
