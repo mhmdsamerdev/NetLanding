@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'DM Mono', ui-monospace, monospace;
-  --color-background: #0d0d0d;
-  --color-surface: #161616;
-  --color-surface-2: #1a1a1a;
-  --color-border: rgba(255,255,255,0.07);
-  --color-border-subtle: rgba(255,255,255,0.04);
-  --color-text-primary: #f0f0f0;
-  --color-text-secondary: #888;
-  --color-text-muted: #555;
-  --color-accent: #6ee7b7;
-  --color-accent-dim: rgba(110,231,183,0.12);
+  --font-sans: 'Figtree', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+  --color-bg: #1a1722;
+  --color-surface: #221e2c;
+  --color-raised: #2b2637;
+  --color-line: rgba(255, 255, 255, 0.07);
+  --color-ink: #f3ece0;
+  --color-ink-2: #b9b3c8;
+  --color-muted: #8a849a;
+  --color-gold: #e8c468;
+  --color-sky: #8fb0e8;
+  --color-coral: #e0604f;
+  --color-salmon: #f0968a;
+  --color-lilac: #c9bde0;
+  --radius-card: 24px;
 }
 
 *, *::before, *::after {
@@ -26,28 +29,29 @@ html, body, #root {
 }
 
 body {
-  background-color: #0d0d0d;
-  color: #f0f0f0;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.font-mono {
-  font-family: 'DM Mono', ui-monospace, monospace;
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #161616;
+  background: var(--color-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  background: #3a3548;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  background: #4a4459;
 }

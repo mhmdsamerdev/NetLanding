@@ -42,8 +42,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             className={cn(
               'flex items-center gap-3 px-4 py-3 rounded-lg border text-sm shadow-xl pointer-events-auto min-w-[260px] max-w-sm',
               t.type === 'success'
-                ? 'bg-[#161616] border-emerald-500/30 text-emerald-300'
-                : 'bg-[#161616] border-red-500/30 text-red-300'
+                ? 'bg-surface border-gold/30 text-gold'
+                : 'bg-surface border-coral/40 text-salmon'
             )}
           >
             {t.type === 'success' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}

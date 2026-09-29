@@ -108,6 +108,16 @@ class PerSourceBreakdown(BaseModel):
     total_gross: float
     total_net: float
     entry_count: int
+    total_fees: float = 0.0
+    fee_pct: float = 0.0
+
+
+class AvailableEntry(BaseModel):
+    id: int
+    title: str
+    source_name: str
+    amount: float
+    days_available: int
 
 
 class StatusCounts(BaseModel):
@@ -140,3 +150,14 @@ class DashboardOut(BaseModel):
     available_overdue_amount: float
     available_overdue_days: int
     expiry_warnings: list["ExpiryWarning"] = []
+    month: str = ""
+    month_entry_count: int = 0
+    month_platform_fees: float = 0.0
+    month_withdrawal_fees: float = 0.0
+    month_pending_net: float = 0.0
+    month_available_net: float = 0.0
+    month_withdrawn_net: float = 0.0
+    month_in_bank_net: float = 0.0
+    month_ready_source: Optional[str] = None
+    avg_days_earned_to_bank: float = 0.0
+    available_entries: list[AvailableEntry] = []

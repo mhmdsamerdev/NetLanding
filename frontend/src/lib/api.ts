@@ -70,7 +70,7 @@ export interface DashboardData {
   cleared_this_month: number
   platform_fees_this_month: number
   withdrawal_fees_this_month: number
-  per_source_breakdown: { source_name: string; total_gross: number; total_net: number; entry_count: number }[]
+  per_source_breakdown: { source_name: string; total_gross: number; total_net: number; entry_count: number; total_fees: number; fee_pct: number }[]
   status_counts: { pending: number; available: number; withdrawn: number; in_bank: number }
   pending_net: number
   available_net: number
@@ -83,6 +83,17 @@ export interface DashboardData {
   available_overdue_amount: number
   available_overdue_days: number
   expiry_warnings: { date: string; net: number; currency: string; label: string }[]
+  month: string
+  month_entry_count: number
+  month_platform_fees: number
+  month_withdrawal_fees: number
+  month_pending_net: number
+  month_available_net: number
+  month_withdrawn_net: number
+  month_in_bank_net: number
+  month_ready_source: string | null
+  avg_days_earned_to_bank: number
+  available_entries: { id: number; title: string; source_name: string; amount: number; days_available: number }[]
 }
 
 export interface Settings {
@@ -111,7 +122,7 @@ export const banksApi = {
 }
 
 export const dashboardApi = {
-  get: () => api.get<DashboardData>('/dashboard'),
+  get: (month?: string) => api.get<DashboardData>('/dashboard', { params: month ? { month } : undefined }),
 }
 
 export const settingsApi = {

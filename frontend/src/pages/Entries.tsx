@@ -114,8 +114,8 @@ export default function Entries() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-base font-semibold text-zinc-100">Entries</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">{entries.length} total</p>
+          <h1 className="font-display text-3xl font-semibold text-ink">Entries</h1>
+          <p className="text-xs text-muted mt-0.5">{entries.length} total</p>
         </div>
         <Button variant="accent" size="md" onClick={() => { setEditEntry(null); setModalOpen(true) }}>
           <Plus size={14} />
@@ -126,7 +126,7 @@ export default function Entries() {
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-4">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600" />
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
           <Input
             className="pl-8"
             placeholder="Search project / client…"
@@ -147,7 +147,7 @@ export default function Entries() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#161616] border border-white/[0.07] rounded-xl overflow-hidden">
+      <div className="bg-surface border border-white/[0.07] rounded-card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/[0.06]">
@@ -158,7 +158,7 @@ export default function Entries() {
                   onClick={() => handleSort(col)}
                 >
                   <span className={`inline-flex items-center gap-1 transition-colors ${
-                    sortKey === col.key ? 'text-zinc-300' : 'text-zinc-600 hover:text-zinc-400'
+                    sortKey === col.key ? 'text-ink-2' : 'text-muted hover:text-ink-2'
                   }`}>
                     {col.label}
                     {sortKey === col.key
@@ -175,11 +175,11 @@ export default function Entries() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-zinc-600 text-xs">Loading…</td>
+                <td colSpan={7} className="text-center py-12 text-muted text-xs">Loading…</td>
               </tr>
             ) : paginated.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-zinc-600 text-xs">
+                <td colSpan={7} className="text-center py-12 text-muted text-xs">
                   {entries.length === 0 ? 'No entries yet. Create your first one!' : 'No results match your filters.'}
                 </td>
               </tr>
@@ -189,21 +189,21 @@ export default function Entries() {
                 className={`border-b border-white/[0.04] hover:bg-white/[0.02] cursor-pointer transition-colors ${i % 2 === 0 ? '' : 'bg-white/[0.01]'}`}
                 onClick={() => { setEditEntry(e); setModalOpen(true) }}
               >
-                <td className="px-4 py-3 text-zinc-200 max-w-[200px]">
+                <td className="px-4 py-3 text-ink max-w-[200px]">
                   <p className="truncate font-medium">{e.project_client_name}</p>
-                  {e.invoice_ref && <p className="text-[10px] text-zinc-600 truncate">{e.invoice_ref}</p>}
+                  {e.invoice_ref && <p className="text-[10px] text-muted truncate">{e.invoice_ref}</p>}
                 </td>
-                <td className="px-4 py-3 text-zinc-500 text-xs">{e.source?.name ?? '—'}</td>
+                <td className="px-4 py-3 text-muted text-xs">{e.source?.name ?? '—'}</td>
                 <td className="px-4 py-3">
-                  <span className="font-mono text-zinc-200">{formatCurrency(e.gross_amount, e.gross_currency)}</span>
+                  <span className="tabular-nums text-ink">{formatCurrency(e.gross_amount, e.gross_currency)}</span>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="font-mono text-emerald-400">{formatCurrency(e.net_income, e.gross_currency)}</span>
+                  <span className="tabular-nums text-gold">{formatCurrency(e.net_income, e.gross_currency)}</span>
                 </td>
                 <td className="px-4 py-3">
                   <Badge className={statusColor(e.status)}>{e.status}</Badge>
                 </td>
-                <td className="px-4 py-3 text-xs text-zinc-500 font-mono">{formatDate(e.date_received)}</td>
+                <td className="px-4 py-3 text-xs text-muted tabular-nums">{formatDate(e.date_received)}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1 justify-end" onClick={ev => ev.stopPropagation()}>
                     <Button
@@ -217,7 +217,7 @@ export default function Entries() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="hover:text-red-400"
+                      className="hover:text-salmon"
                       onClick={() => setDeleteTarget(e)}
                       title="Delete"
                     >
@@ -233,7 +233,7 @@ export default function Entries() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4 text-xs text-zinc-500">
+        <div className="flex items-center justify-between mt-4 text-xs text-muted">
           <span>Page {page + 1} of {totalPages}</span>
           <div className="flex gap-1.5">
             <Button size="icon" variant="ghost" disabled={page === 0} onClick={() => setPage(p => p - 1)}>

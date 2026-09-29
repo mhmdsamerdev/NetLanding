@@ -38,8 +38,8 @@ const emptyPayload = (): EntryPayload => ({
 function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <div>
-      <label className="block text-[11px] text-zinc-400 mb-1.5 uppercase tracking-wider">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+      <label className="block text-[11px] text-ink-2 mb-1.5 uppercase tracking-wider">
+        {label}{required && <span className="text-salmon ml-0.5">*</span>}
       </label>
       {children}
     </div>
@@ -158,11 +158,11 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative ml-auto z-10 w-full max-w-xl bg-[#161616] border-l border-white/[0.07] h-full flex flex-col shadow-2xl">
+      <div className="relative ml-auto z-10 w-full max-w-xl bg-surface border-l border-white/[0.07] h-full flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.07] shrink-0">
-          <h2 className="text-sm font-semibold text-zinc-100">{entry ? 'Edit Entry' : 'New Entry'}</h2>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded">
+          <h2 className="text-sm font-semibold text-ink">{entry ? 'Edit Entry' : 'New Entry'}</h2>
+          <button onClick={onClose} className="text-muted hover:text-ink-2 transition-colors p-1 rounded">
             <X size={15} />
           </button>
         </div>
@@ -219,9 +219,9 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
           </div>
 
           {/* Net income live preview */}
-          <div className="flex items-center justify-between bg-emerald-500/8 border border-emerald-500/15 rounded-lg px-4 py-3">
-            <span className="text-[11px] uppercase tracking-wider text-emerald-600">Net Income</span>
-            <span className={cn('font-mono text-xl font-medium', netIncome < 0 ? 'text-red-400' : 'text-emerald-400')}>
+          <div className="flex items-center justify-between bg-gold/10 border border-gold/15 rounded-lg px-4 py-3">
+            <span className="text-[11px] uppercase tracking-wider text-gold/60">Net Income</span>
+            <span className={cn('tabular-nums text-xl font-medium', netIncome < 0 ? 'text-salmon' : 'text-gold')}>
               {form.gross_currency} {netIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
@@ -263,11 +263,11 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
                   className={cn(
                     'flex-1 py-1.5 rounded-md text-xs font-medium transition-colors border',
                     form.status === s
-                      ? s === 'Pending' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                        : s === 'Available' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30'
-                        : s === 'Withdrawn' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
-                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                      : 'bg-transparent text-zinc-500 border-white/[0.07] hover:bg-white/5'
+                      ? s === 'Pending' ? 'bg-lilac/20 text-lilac border-lilac/30'
+                        : s === 'Available' ? 'bg-sky/20 text-sky border-sky/30'
+                        : s === 'Withdrawn' ? 'bg-white/10 text-ink-2 border-white/20'
+                        : 'bg-gold/20 text-gold border-gold/30'
+                      : 'bg-transparent text-muted border-white/[0.07] hover:bg-white/5'
                   )}
                 >
                   {s}
@@ -309,9 +309,9 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
           </div>
 
           {daysToClear !== null && daysToClear >= 0 && (
-            <div className="text-xs text-zinc-500 flex items-center gap-1.5 -mt-1">
-              <span className="text-zinc-600">Days to clear:</span>
-              <span className="font-mono text-zinc-300">{daysToClear}d</span>
+            <div className="text-xs text-muted flex items-center gap-1.5 -mt-1">
+              <span className="text-muted">Days to clear:</span>
+              <span className="tabular-nums text-ink-2">{daysToClear}d</span>
             </div>
           )}
 
@@ -337,7 +337,7 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
               onChange={e => set('notes', e.target.value || null)}
               rows={3}
               placeholder="Optional notes…"
-              className="w-full rounded-md bg-[#1a1a1a] border border-white/10 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500/50 transition-colors resize-none"
+              className="w-full rounded-md bg-raised border border-line px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold/50 transition-colors resize-none"
             />
           </Field>
         </div>

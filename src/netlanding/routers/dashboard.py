@@ -1,5 +1,6 @@
 from datetime import datetime, date, timedelta
-from fastapi import APIRouter, Depends
+from typing import Optional
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import models, schemas
@@ -8,13 +9,21 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
 @router.get("", response_model=schemas.DashboardOut)
-def get_dashboard(db: Session = Depends(get_db)):
+def get_dashboard(
+    month: Optional[str] = Query(None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$"),
+    db: Session = Depends(get_db),
+):
     settings = db.query(models.Settings).first()
     base_currency = settings.base_currency if settings else "USD"
 
     all_entries = db.query(models.Entry).all()
     now = datetime.utcnow()
-    month_start = date(now.year, now.month, 1)
+    if month:
+        year, mon = int(month[:4]), int(month[5:])
+    else:
+        year, mon = now.year, now.month
+    month_start = date(year, mon, 1)
+    month_end = date(year + (mon == 12), mon % 12 + 1, 1)
 
     total_gross = 0.0
     total_net = 0.0
@@ -38,6 +47,12 @@ def get_dashboard(db: Session = Depends(get_db)):
     oldest_available_date = None
     expiring_entries: list[dict] = []
 
+    month_count = 0
+    month_status_net = {"Pending": 0.0, "Available": 0.0, "Withdrawn": 0.0, "In Bank": 0.0}
+    month_ready_by_source: dict[str, float] = {}
+    earned_to_bank_days: list[int] = []
+    available_entries: list[schemas.AvailableEntry] = []
+
     for e in all_entries:
         gross = e.gross_amount or 0
         fees = (e.platform_fee or 0) + (e.withdrawal_fee or 0)
@@ -47,14 +62,20 @@ def get_dashboard(db: Session = Depends(get_db)):
         total_net += net
         total_fees += fees
 
-        if e.date_received and e.date_received >= month_start:
+        if e.date_received and month_start <= e.date_received < month_end:
+            month_count += 1
+            month_key = e.status if e.status in month_status_net else "Pending"
+            month_status_net[month_key] += net
+            if month_key == "Available":
+                src = e.source.name if e.source else "Unknown"
+                month_ready_by_source[src] = month_ready_by_source.get(src, 0.0) + net
             gross_month += gross
             net_month += net
             fees_month += fees
             platform_fees_month += e.platform_fee or 0
             withdrawal_fees_month += e.withdrawal_fee or 0
 
-        if e.status == "In Bank" and e.date_cleared and e.date_cleared >= month_start:
+        if e.status == "In Bank" and e.date_cleared and month_start <= e.date_cleared < month_end:
             cleared_month += net
 
         status_key = e.status if e.status in status_counts else "Pending"
@@ -76,9 +97,19 @@ def get_dashboard(db: Session = Depends(get_db)):
                     source_days_map[source_name] = []
                 source_days_map[source_name].append(delta)
 
+        if e.status == "In Bank" and e.date_cleared and e.date_received:
+            earned_to_bank_days.append(max((e.date_cleared - e.date_received).days, 0))
+
         if e.status == "Available":
             available_overdue_amount += net
             check_date = e.date_available or e.date_received
+            available_entries.append(schemas.AvailableEntry(
+                id=e.id,
+                title=e.project_client_name,
+                source_name=source_name,
+                amount=round(net, 2),
+                days_available=max((date.today() - check_date).days, 0) if check_date else 0,
+            ))
             if check_date:
                 days_waiting = (date.today() - check_date).days
                 if oldest_available_date is None or check_date < oldest_available_date:
@@ -100,6 +131,8 @@ def get_dashboard(db: Session = Depends(get_db)):
             total_gross=vals["total_gross"],
             total_net=vals["total_net"],
             entry_count=vals["entry_count"],
+            total_fees=round(vals["total_gross"] - vals["total_net"], 2),
+            fee_pct=round((vals["total_gross"] - vals["total_net"]) / vals["total_gross"] * 100, 1) if vals["total_gross"] else 0.0,
         )
         for name, vals in source_map.items()
     ]
@@ -110,7 +143,22 @@ def get_dashboard(db: Session = Depends(get_db)):
         for name, days in source_days_map.items()
     ]
 
+    available_entries.sort(key=lambda a: a.days_available, reverse=True)
+    ready_source = max(month_ready_by_source, key=month_ready_by_source.get) if month_ready_by_source else None
+    avg_earned_to_bank = sum(earned_to_bank_days) / len(earned_to_bank_days) if earned_to_bank_days else 0.0
+
     return schemas.DashboardOut(
+        month=f"{year:04d}-{mon:02d}",
+        month_entry_count=month_count,
+        month_platform_fees=round(platform_fees_month, 2),
+        month_withdrawal_fees=round(withdrawal_fees_month, 2),
+        month_pending_net=round(month_status_net["Pending"], 2),
+        month_available_net=round(month_status_net["Available"], 2),
+        month_withdrawn_net=round(month_status_net["Withdrawn"], 2),
+        month_in_bank_net=round(month_status_net["In Bank"], 2),
+        month_ready_source=ready_source,
+        avg_days_earned_to_bank=round(avg_earned_to_bank, 1),
+        available_entries=available_entries,
         total_gross_all_time=round(total_gross, 2),
         total_net_all_time=round(total_net, 2),
         total_fees_all_time=round(total_fees, 2),

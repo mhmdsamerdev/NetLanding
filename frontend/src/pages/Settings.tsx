@@ -12,15 +12,15 @@ import { useToast } from '@/components/ui/toast'
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="mb-4">
-      <h2 className="text-sm font-semibold text-zinc-200">{title}</h2>
-      {sub && <p className="text-xs text-zinc-500 mt-0.5">{sub}</p>}
+      <h2 className="text-sm font-semibold text-ink">{title}</h2>
+      {sub && <p className="text-xs text-muted mt-0.5">{sub}</p>}
     </div>
   )
 }
 
 function ListCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-[#161616] border border-white/[0.07] rounded-xl overflow-hidden">
+    <div className="bg-surface border border-white/[0.07] rounded-card overflow-hidden">
       {children}
     </div>
   )
@@ -104,8 +104,8 @@ export default function Settings() {
   return (
     <div className="p-6 max-w-2xl space-y-8">
       <div>
-        <h1 className="text-base font-semibold text-zinc-100">Settings</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">Configure your income tracker preferences</p>
+        <h1 className="font-display text-3xl font-semibold text-ink">Settings</h1>
+        <p className="text-xs text-muted mt-0.5">Configure your income tracker preferences</p>
       </div>
 
       {/* Base currency */}
@@ -128,15 +128,15 @@ export default function Settings() {
         <SectionHeader title="Income Sources" sub="Where your money comes from — platforms, clients, etc." />
         <ListCard>
           {sources.length === 0 && (
-            <p className="px-4 py-5 text-xs text-zinc-600">No sources yet.</p>
+            <p className="px-4 py-5 text-xs text-muted">No sources yet.</p>
           )}
           {sources.map((s, i) => (
             <div key={s.id} className={`flex items-center justify-between px-4 py-3 ${i !== sources.length - 1 ? 'border-b border-white/[0.05]' : ''}`}>
-              <span className="text-sm text-zinc-300">{s.name}</span>
+              <span className="text-sm text-ink-2">{s.name}</span>
               <Button
                 size="icon"
                 variant="ghost"
-                className="hover:text-red-400"
+                className="hover:text-salmon"
                 onClick={() => setDeleteSource(s)}
               >
                 <Trash2 size={13} />
@@ -166,15 +166,15 @@ export default function Settings() {
         <SectionHeader title="Bank Accounts" sub="Where money lands — banks, e-wallets, Wise, PayPal, etc." />
         <ListCard>
           {banks.length === 0 && (
-            <p className="px-4 py-5 text-xs text-zinc-600">No bank accounts yet.</p>
+            <p className="px-4 py-5 text-xs text-muted">No bank accounts yet.</p>
           )}
           {banks.map((b, i) => (
             <div key={b.id} className={`flex items-center justify-between px-4 py-3 ${i !== banks.length - 1 ? 'border-b border-white/[0.05]' : ''}`}>
-              <span className="text-sm text-zinc-300">{b.name}</span>
+              <span className="text-sm text-ink-2">{b.name}</span>
               <Button
                 size="icon"
                 variant="ghost"
-                className="hover:text-red-400"
+                className="hover:text-salmon"
                 onClick={() => setDeleteBank(b)}
               >
                 <Trash2 size={13} />
