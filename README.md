@@ -1,53 +1,44 @@
 # NetLanding
 
-[![Python](https://img.shields.io/pypi/pyversions/netlanding.svg)](https://pypi.org/project/netlanding/)
+**How much of your money actually reaches you?**
 
-A locally hosted, income tracker for self-employees. Track gross income and all deductions (platform fees, withdrawal fees) before money reaches your bank. **Not** an expense tracker — strictly income and pre-bank leakage.
+You earn $1,000 on a platform. Then come the platform fee, the withdrawal fee, and days of waiting. What lands in your bank is less. NetLanding shows you exactly how much less, and where the rest went.
 
----
+It's a small income tracker that runs on your own computer. No account. No cloud. Your data stays with you.
 
-## Features
+![NetLanding dashboard](https://raw.githubusercontent.com/mhmdsamerdev/NetLanding/main/docs/dashboard.png)
 
-- **Dashboard** — Live pipeline view (Pending → Available → Withdrawn → In Bank), fee erosion tracking, per-source breakdown, avg. days to clear
-- **Entries** — Full table with search, status/source/date filters, inline edit & delete, paginated
-- **Entry Modal** — Real-time net income calculation, status-driven conditional fields (bank account, withdrawal/cleared dates)
-- **Settings** — Manage sources, bank accounts, base currency
-- **Backups & Export** — Automatic daily/shutdown snapshots in `~/.netlanding/backups/`, one-click JSON (full) and CSV (entries) export, and import/restore with preview, merge or replace, and Undo
+## Get started
 
-## First-Time Use
-
-1. **Add Sources** — Go to Settings → Income Sources. Add platforms/clients you earn from (e.g. "Upwork", "Direct Client", "Fiverr").
-2. **Add Bank Accounts** — Go to Settings → Bank Accounts. Add where money lands (e.g. "Maybank MYR", "Wise USD").
-3. **Set Base Currency** — Go to Settings → Base Display Currency. Choose your preferred display currency (default: USD).
-4. **Create Entries** — Go to Entries → New Entry. Log each income event with gross amount, fees, and status.
-
-## Status Lifecycle
-
-| Status | Meaning |
-|---|---|
-| **Pending** | Money visible on platform but not yet released |
-| **Available** | Platform has released — ready to withdraw |
-| **Withdrawn** | Withdrawal initiated |
-| **In Bank** | Money cleared in your bank account |
-
-## Installation
-
-### PyPI (Recommended)
 ```bash
-pip install netlanding
-netlanding          # starts the server and opens it in your browser (http://127.0.0.1:8000)
-netlanding stop     # stops the running server
-netlanding backup   # snapshot the database now (also: `backups` to list)
-netlanding export --format json|csv -o FILE
+uv tool install netlanding
+netlanding
 ```
 
-Options: `--port N`, `--host H`, `--no-browser`, `--log` (debug output), `--version`. Running `netlanding` while it is already running just opens the browser.
+That's it. Your browser opens and you're in. (Prefer pip? `pip install netlanding` works too.)
 
-### Docker
-> [!NOTE]
-> Coming soon!
+## What you get
 
----
+- **See every dollar move.** Each payment goes from Pending → Available → Withdrawn → In Bank. You always know where your money is sitting.
+- **See what fees take.** A clear picture of what each platform really leaves you, so you know which clients are worth it.
+- **Never forget a withdrawal.** The dashboard tells you what's ready to pull out, and for how long it's been waiting.
+- **Log income in seconds.** A quick form, and one click on the status badge to move a payment forward.
+- **Set it up once.** Give each source its usual fee and how long it takes to clear, and NetLanding fills in the rest.
+- **Your data is safe.** Automatic backups, JSON and CSV export, and import with a preview and Undo.
+
+NetLanding tracks income only. It's not an expense tracker, and that's on purpose.
+
+## Commands
+
+```bash
+netlanding                        # start and open the browser
+netlanding stop                   # stop the server
+netlanding backup                 # save a snapshot now
+netlanding export --format csv    # or json
+```
+
+Options: `--port`, `--host`, `--no-browser`, `--log`. Your data lives in `~/.netlanding/`.
 
 ## Contributing
-Contributions are welcome. Please review our [Development Guide](./docs/development.md) and open an issue first to discuss what you'd like to change.
+
+Ideas and fixes are welcome. Open an issue first, and read the [development guide](./docs/development.md).
