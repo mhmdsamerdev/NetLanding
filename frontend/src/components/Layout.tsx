@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, List, Settings, TrendingDown } from 'lucide-react'
+import { LayoutDashboard, List, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { settingsApi } from '@/lib/api'
 
@@ -34,7 +34,7 @@ export default function Layout() {
     <div className="flex h-full min-h-screen bg-bg">
       <aside className="w-[232px] shrink-0 bg-surface/60 flex flex-col px-5 py-8 sticky top-0 h-screen">
         <div className="mb-8 px-3 flex items-center gap-2.5">
-          <TrendingDown size={20} strokeWidth={2} className="text-salmon" />
+          <img src="/favicon.svg" alt="" className="h-7 w-7" />
           <span className="font-display text-xl font-semibold text-ink">NetLanding</span>
         </div>
         <nav className="flex flex-col gap-1">
