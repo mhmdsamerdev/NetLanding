@@ -5,6 +5,10 @@ import type { Entry, EntryPayload, Source, BankAccount } from '@/lib/api'
 import { CURRENCIES, STATUSES, cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { DateInput } from '@/components/ui/date-input'
+import { AmountInput } from '@/components/ui/amount-input'
+import { Textarea } from '@/components/ui/textarea'
+import { todayISO } from '@/lib/date'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 
@@ -98,7 +102,7 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
     setForm(prev => {
       const next = { ...prev, [k]: v }
       if (k === 'status') {
-        const today = new Date().toISOString().split('T')[0]
+        const today = todayISO()
         if (v === 'Withdrawn' && !next.date_withdrawn) next.date_withdrawn = today
         if (v === 'In Bank' && !next.date_cleared) next.date_cleared = today
       }
@@ -180,41 +184,19 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Gross Amount" required>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.gross_amount || ''}
-                onChange={e => set('gross_amount', parseFloat(e.target.value) || 0)}
-              />
+              <AmountInput value={form.gross_amount} onChange={v => set('gross_amount', v)} placeholder="0.00" />
             </Field>
             <Field label="Currency">
-              <Select value={form.gross_currency} onChange={e => set('gross_currency', e.target.value)}>
-                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </Select>
+              <Select value={form.gross_currency} onChange={v => set('gross_currency', v)} options={CURRENCIES.map(c => ({ value: c, label: c }))} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Platform Fee">
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.platform_fee || ''}
-                onChange={e => set('platform_fee', parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-              />
+              <AmountInput value={form.platform_fee} onChange={v => set('platform_fee', v)} placeholder="0.00" />
             </Field>
             <Field label="Withdrawal Fee">
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.withdrawal_fee || ''}
-                onChange={e => set('withdrawal_fee', parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-              />
+              <AmountInput value={form.withdrawal_fee} onChange={v => set('withdrawal_fee', v)} placeholder="0.00" />
             </Field>
           </div>
 
@@ -242,10 +224,13 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
               </div>
             ) : (
               <div className="flex gap-2">
-                <Select value={form.source_id ?? ''} onChange={e => set('source_id', e.target.value ? Number(e.target.value) : null)} className="flex-1">
-                  <option value="">— No source —</option>
-                  {sources.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </Select>
+                <div className="flex-1 min-w-0">
+                  <Select
+                    value={form.source_id != null ? String(form.source_id) : ''}
+                    onChange={v => set('source_id', v ? Number(v) : null)}
+                    options={[{ value: '', label: '— No source —' }, ...sources.map(s => ({ value: String(s.id), label: s.name }))]}
+                  />
+                </div>
                 <Button size="sm" variant="ghost" onClick={() => setAddingSource(true)} title="Add new source">
                   <Plus size={13} />
                 </Button>
@@ -279,31 +264,32 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
           {/* Bank account — conditional */}
           {showBankField && (
             <Field label="Bank Account">
-              <Select value={form.bank_account_id ?? ''} onChange={e => set('bank_account_id', e.target.value ? Number(e.target.value) : null)}>
-                <option value="">— Select bank account —</option>
-                {banks.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-              </Select>
+              <Select
+                value={form.bank_account_id != null ? String(form.bank_account_id) : ''}
+                onChange={v => set('bank_account_id', v ? Number(v) : null)}
+                options={[{ value: '', label: '— Select bank account —' }, ...banks.map(b => ({ value: String(b.id), label: b.name }))]}
+              />
             </Field>
           )}
 
           <div className="border-t border-white/[0.05] pt-4 grid grid-cols-2 gap-3">
             <Field label="Date Received">
-              <Input type="date" value={form.date_received ?? ''} onChange={e => set('date_received', e.target.value || null)} />
+              <DateInput value={form.date_received} onChange={v => set('date_received', v || null)} />
             </Field>
             <Field label="Date Available">
-              <Input type="date" value={form.date_available ?? ''} onChange={e => set('date_available', e.target.value || null)} />
+              <DateInput value={form.date_available} onChange={v => set('date_available', v || null)} min={form.date_received || undefined} />
             </Field>
             <Field label="Date Expiry">
-              <Input type="date" value={form.date_expiry ?? ''} onChange={e => set('date_expiry', e.target.value || null)} />
+              <DateInput value={form.date_expiry} onChange={v => set('date_expiry', v || null)} />
             </Field>
             {(form.status === 'Withdrawn' || form.status === 'In Bank') && (
               <Field label="Date Withdrawn">
-                <Input type="date" value={form.date_withdrawn ?? ''} onChange={e => set('date_withdrawn', e.target.value || null)} />
+                <DateInput value={form.date_withdrawn} onChange={v => set('date_withdrawn', v || null)} min={form.date_received || undefined} />
               </Field>
             )}
             {form.status === 'In Bank' && (
               <Field label="Date Cleared">
-                <Input type="date" value={form.date_cleared ?? ''} onChange={e => set('date_cleared', e.target.value || null)} />
+                <DateInput value={form.date_cleared} onChange={v => set('date_cleared', v || null)} min={form.date_withdrawn || undefined} />
               </Field>
             )}
           </div>
@@ -332,12 +318,11 @@ export default function EntryModal({ open, entry, initialSources, onClose, onSav
           </Field>
 
           <Field label="Notes">
-            <textarea
+            <Textarea
               value={form.notes ?? ''}
               onChange={e => set('notes', e.target.value || null)}
               rows={3}
               placeholder="Optional notes…"
-              className="w-full rounded-md bg-raised border border-line px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold/50 transition-colors resize-none"
             />
           </Field>
         </div>

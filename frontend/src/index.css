@@ -41,6 +41,11 @@ body {
   letter-spacing: -0.03em;
 }
 
+html {
+  color-scheme: dark;
+  scrollbar-color: #3a3548 transparent;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

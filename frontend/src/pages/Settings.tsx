@@ -112,9 +112,7 @@ export default function Settings() {
       <section>
         <SectionHeader title="Base Display Currency" sub="All dashboard totals are shown in this currency." />
         <div className="flex gap-2 items-center">
-          <Select value={currency} onChange={e => setCurrency(e.target.value)} className="w-36">
-            {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </Select>
+          <Select value={currency} onChange={setCurrency} className="w-36" options={CURRENCIES.map(c => ({ value: c, label: c }))} />
           <Button variant="accent" size="md" onClick={handleSaveCurrency} disabled={savingCurrency}>
             {savingCurrency ? 'Saving…' : 'Save'}
           </Button>

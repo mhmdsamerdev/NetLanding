@@ -4,14 +4,10 @@ import type { DashboardData } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 import { cn, formatCurrency } from '@/lib/utils'
+import { todayISO } from '@/lib/date'
 
 const OVERDUE_DAYS = 30
 const BAR_FULL_DAYS = 50
-
-function todayISO() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
 
 interface Props {
   data: DashboardData

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { DateInput } from '@/components/ui/date-input'
 import { ConfirmDialog } from '@/components/ui/dialog'
 import EntryModal from '@/components/EntryModal'
 import { useToast } from '@/components/ui/toast'
@@ -134,16 +135,20 @@ export default function Entries() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-36">
-          <option value="">All statuses</option>
-          {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-        </Select>
-        <Select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className="w-40">
-          <option value="">All sources</option>
-          {sources.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </Select>
-        <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36" title="Date from" />
-        <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36" title="Date to" />
+        <Select
+          value={statusFilter}
+          onChange={setStatusFilter}
+          className="w-40"
+          options={[{ value: '', label: 'All statuses' }, ...STATUSES.map(s => ({ value: s, label: s }))]}
+        />
+        <Select
+          value={sourceFilter}
+          onChange={setSourceFilter}
+          className="w-44"
+          options={[{ value: '', label: 'All sources' }, ...sources.map(s => ({ value: String(s.id), label: s.name }))]}
+        />
+        <DateInput value={dateFrom} onChange={setDateFrom} max={dateTo || undefined} placeholder="From" className="w-40" />
+        <DateInput value={dateTo} onChange={setDateTo} min={dateFrom || undefined} placeholder="To" className="w-40" />
       </div>
 
       {/* Table */}
