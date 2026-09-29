@@ -7,6 +7,8 @@ export default api
 export interface Source {
   id: number
   name: string
+  default_fee_percent: number | null
+  clearing_days: number | null
   created_at: string
 }
 
@@ -112,6 +114,8 @@ export const entriesApi = {
 export const sourcesApi = {
   list: () => api.get<Source[]>('/sources'),
   create: (name: string) => api.post<Source>('/sources', { name }),
+  update: (id: number, patch: Partial<Pick<Source, 'name' | 'default_fee_percent' | 'clearing_days'>>) =>
+    api.patch<Source>(`/sources/${id}`, patch),
   delete: (id: number) => api.delete(`/sources/${id}`),
 }
 

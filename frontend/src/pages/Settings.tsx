@@ -27,6 +27,41 @@ function ListCard({ children }: { children: React.ReactNode }) {
   )
 }
 
+function SourceDefaultInput({ label, value, max, integer, onSave }: {
+  label: string
+  value: number | null
+  max?: number
+  integer?: boolean
+  onSave: (v: number | null) => Promise<void>
+}) {
+  const shown = value === null ? '' : String(value)
+  const [draft, setDraft] = useState<string | null>(null) // null = not being edited
+
+  const commit = async () => {
+    const t = (draft ?? shown).trim()
+    setDraft(null)
+    if (t === shown) return
+    const n = t === '' ? null : Number(t)
+    const ok = n === null || (Number.isFinite(n) && n >= 0 && (max === undefined || n <= max) && (!integer || Number.isInteger(n)))
+    await onSave(ok ? n : NaN)
+  }
+
+  return (
+    <label className="flex flex-col gap-1 text-[11px] text-muted">
+      {label}
+      <Input
+        value={draft ?? shown}
+        inputMode={integer ? 'numeric' : 'decimal'}
+        placeholder="—"
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+        className="w-28"
+      />
+    </label>
+  )
+}
+
 export default function Settings() {
   const { toast } = useToast()
   const [currency, setCurrency] = useState('USD')
@@ -90,6 +125,23 @@ export default function Settings() {
       toast('Source added')
     } catch {
       toast('Source already exists or error', 'error')
+    }
+  }
+
+  const handleUpdateSource = async (
+    s: Source,
+    patch: { default_fee_percent?: number | null; clearing_days?: number | null },
+  ) => {
+    if (Object.values(patch).some(v => typeof v === 'number' && Number.isNaN(v))) {
+      toast('Enter a fee from 0 to 100 and whole days of 0 or more', 'error')
+      return
+    }
+    try {
+      const r = await sourcesApi.update(s.id, patch)
+      setSources(prev => prev.map(x => (x.id === s.id ? r.data : x)))
+      toast('Source updated')
+    } catch {
+      toast('Failed to update source', 'error')
     }
   }
 
@@ -168,16 +220,30 @@ export default function Settings() {
             <p className="px-4 py-5 text-xs text-muted">No sources yet.</p>
           )}
           {sources.map((s, i) => (
-            <div key={s.id} className={`flex items-center justify-between px-4 py-3 ${i !== sources.length - 1 ? 'border-b border-white/[0.05]' : ''}`}>
-              <span className="text-sm text-ink-2">{s.name}</span>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="hover:text-salmon"
-                onClick={() => setDeleteSource(s)}
-              >
-                <Trash2 size={13} />
-              </Button>
+            <div key={s.id} className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${i !== sources.length - 1 ? 'border-b border-white/[0.05]' : ''}`}>
+              <span className="text-sm text-ink-2 min-w-[8rem]">{s.name}</span>
+              <div className="flex items-end gap-3">
+                <SourceDefaultInput
+                  label="Usual fee (%)"
+                  value={s.default_fee_percent}
+                  max={100}
+                  onSave={v => handleUpdateSource(s, { default_fee_percent: v })}
+                />
+                <SourceDefaultInput
+                  label="Days to clear"
+                  value={s.clearing_days}
+                  integer
+                  onSave={v => handleUpdateSource(s, { clearing_days: v })}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="hover:text-salmon"
+                  onClick={() => setDeleteSource(s)}
+                >
+                  <Trash2 size={13} />
+                </Button>
+              </div>
             </div>
           ))}
         </ListCard>

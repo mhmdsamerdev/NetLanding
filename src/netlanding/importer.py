@@ -171,6 +171,8 @@ def validate(data: dict) -> None:
     for row in data["sources"] + data["bank_accounts"]:
         if not isinstance(row.get("id"), int) or not (row.get("name") or "").strip():
             raise ImportError_("A source or bank account in this file has no name. Nothing was imported.")
+    for row in data["sources"]:
+        _source_extras(row)
     for e in data["entries"]:
         _make_entry(e, None, None, keep_id=False)
 
@@ -202,6 +204,24 @@ def _d(v):
 
 def _dt(v):
     return datetime.fromisoformat(str(v)) if v else None
+
+
+def _source_extras(row: dict) -> dict:
+    """Optional per-source defaults; absent in old exports, so missing means empty."""
+    try:
+        fee = row.get("default_fee_percent")
+        days = row.get("clearing_days")
+        if fee is not None:
+            fee = float(fee)
+            if not 0 <= fee <= 100:  # also rejects NaN
+                raise ValueError("fee out of range")
+        if days is not None:
+            if isinstance(days, bool) or int(days) != days or days < 0:
+                raise ValueError("days invalid")
+            days = int(days)
+    except (TypeError, ValueError):
+        raise ImportError_(f"Source '{row.get('name')}' has an invalid usual fee or days to clear. Nothing was imported.")
+    return {"default_fee_percent": fee, "clearing_days": days}
 
 
 def _make_entry(e: dict, source_id, bank_id, keep_id: bool) -> models.Entry:
@@ -262,7 +282,7 @@ def _replace(data: dict, db: Session) -> dict:
         db.query(model).delete()
     db.flush()
     for s in data["sources"]:
-        db.add(models.Source(id=s["id"], name=s["name"], created_at=_dt(s.get("created_at"))))
+        db.add(models.Source(id=s["id"], name=s["name"], created_at=_dt(s.get("created_at")), **_source_extras(s)))
     for b in data["bank_accounts"]:
         db.add(models.BankAccount(id=b["id"], name=b["name"], created_at=_dt(b.get("created_at"))))
     db.flush()
@@ -282,7 +302,7 @@ def _replace(data: dict, db: Session) -> dict:
 def _merge(data: dict, db: Session) -> dict:
     new, dup = _split_new(data, db)
 
-    def ensure(model, rows):
+    def ensure(model, rows, extras=lambda r: {}):
         have = {r.name.strip().lower(): r.id for r in db.query(model)}
         mapping = {}
         for r in rows:
@@ -290,14 +310,14 @@ def _merge(data: dict, db: Session) -> dict:
             if not key:
                 continue
             if key not in have:
-                obj = model(name=r["name"].strip())
+                obj = model(name=r["name"].strip(), **extras(r))
                 db.add(obj)
                 db.flush()
                 have[key] = obj.id
             mapping[r["id"]] = have[key]
         return mapping
 
-    src_map = ensure(models.Source, data["sources"])
+    src_map = ensure(models.Source, data["sources"], _source_extras)
     bank_map = ensure(models.BankAccount, data["bank_accounts"])
     for e in new:
         db.add(_make_entry(e, src_map.get(e.get("source_id")), bank_map.get(e.get("bank_account_id")), keep_id=False))

@@ -23,6 +23,27 @@ def create_source(payload: schemas.SourceCreate, db: Session = Depends(get_db)):
     return source
 
 
+@router.patch("/{source_id}", response_model=schemas.SourceOut)
+def update_source(source_id: int, payload: schemas.SourceUpdate, db: Session = Depends(get_db)):
+    source = db.query(models.Source).filter(models.Source.id == source_id).first()
+    if not source:
+        raise HTTPException(status_code=404, detail="Source not found")
+    changes = payload.model_dump(exclude_unset=True)
+    if "name" in changes:
+        name = (changes["name"] or "").strip()
+        if not name:
+            raise HTTPException(status_code=422, detail="Name cannot be empty")
+        clash = db.query(models.Source).filter(models.Source.name == name, models.Source.id != source_id).first()
+        if clash:
+            raise HTTPException(status_code=400, detail="Source with this name already exists")
+        changes["name"] = name
+    for field, value in changes.items():
+        setattr(source, field, value)
+    db.commit()
+    db.refresh(source)
+    return source
+
+
 @router.delete("/{source_id}", status_code=204)
 def delete_source(source_id: int, db: Session = Depends(get_db)):
     source = db.query(models.Source).filter(models.Source.id == source_id).first()

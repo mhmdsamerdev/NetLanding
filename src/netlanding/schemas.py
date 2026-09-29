@@ -1,14 +1,23 @@
 from datetime import datetime, date
 from typing import Optional
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, Field, computed_field
 
 
 class SourceBase(BaseModel):
     name: str
+    default_fee_percent: Optional[float] = Field(None, ge=0, le=100, allow_inf_nan=False)
+    clearing_days: Optional[int] = Field(None, ge=0)
 
 
 class SourceCreate(SourceBase):
     pass
+
+
+class SourceUpdate(BaseModel):
+    """Only fields that are sent are changed; sending null clears a fee/days value."""
+    name: Optional[str] = None
+    default_fee_percent: Optional[float] = Field(None, ge=0, le=100, allow_inf_nan=False)
+    clearing_days: Optional[int] = Field(None, ge=0)
 
 
 class SourceOut(SourceBase):

@@ -9,6 +9,8 @@ class Source(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, nullable=False, unique=True)
+    default_fee_percent = Column(Float, nullable=True)
+    clearing_days = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     entries = relationship("Entry", back_populates="source")

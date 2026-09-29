@@ -7,12 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from .database import engine
-from . import models, backup, __version__
+from . import models, backup, migrations, __version__
 from .routers import entries, sources, banks, settings, dashboard, data
 
 STATIC_DIR = Path(__file__).parent / "static"
 
 models.Base.metadata.create_all(bind=engine)
+migrations.migrate(engine)
 
 log = logging.getLogger("netlanding")
 
