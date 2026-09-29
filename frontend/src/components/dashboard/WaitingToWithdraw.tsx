@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { entriesApi } from '@/lib/api'
-import type { DashboardData } from '@/lib/api'
+import type { DashboardData, Entry } from '@/lib/api'
+import StatusPopover from '@/components/StatusPopover'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 import { cn, formatCurrency } from '@/lib/utils'
-import { todayISO } from '@/lib/date'
 
 const OVERDUE_DAYS = 30
 const BAR_FULL_DAYS = 50
@@ -17,17 +17,19 @@ interface Props {
 export default function WaitingToWithdraw({ data, onChanged }: Props) {
   const { toast } = useToast()
   const [busyId, setBusyId] = useState<number | null>(null)
+  const [target, setTarget] = useState<{ entry: Entry; anchor: HTMLElement } | null>(null)
   const cur = data.base_currency
   const total = data.available_entries.reduce((a, e) => a + e.amount, 0)
 
-  async function markWithdrawn(id: number) {
+  // Same step as moving Available → Withdrawn from the entries table: asks for bank, fee and date.
+  async function markWithdrawn(id: number, anchor: HTMLElement) {
+    if (target?.entry.id === id) { setTarget(null); return }
     setBusyId(id)
     try {
-      await entriesApi.update(id, { status: 'Withdrawn', date_withdrawn: todayISO() })
-      toast('Marked as withdrawn')
-      onChanged()
+      const r = await entriesApi.get(id)
+      setTarget({ entry: r.data, anchor })
     } catch {
-      toast('Could not update the entry', 'error')
+      toast('Could not load the entry', 'error')
     } finally {
       setBusyId(null)
     }
@@ -71,7 +73,7 @@ export default function WaitingToWithdraw({ data, onChanged }: Props) {
                   size="md"
                   className="h-11 w-[100px] px-3 text-[13px] leading-tight text-center whitespace-normal"
                   disabled={busyId === e.id}
-                  onClick={() => markWithdrawn(e.id)}
+                  onClick={ev => markWithdrawn(e.id, ev.currentTarget)}
                 >
                   Mark withdrawn
                 </Button>
@@ -79,6 +81,15 @@ export default function WaitingToWithdraw({ data, onChanged }: Props) {
             )
           })}
         </ul>
+      )}
+      {target && (
+        <StatusPopover
+          key={target.entry.id}
+          entry={target.entry}
+          anchor={target.anchor}
+          onClose={() => setTarget(null)}
+          onSaved={onChanged}
+        />
       )}
     </section>
   )
