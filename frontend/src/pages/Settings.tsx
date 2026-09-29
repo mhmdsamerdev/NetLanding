@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
-import { sourcesApi, banksApi, settingsApi } from '@/lib/api'
-import type { Source, BankAccount } from '@/lib/api'
+import { Download, Plus, Trash2 } from 'lucide-react'
+import { sourcesApi, banksApi, settingsApi, dataApi } from '@/lib/api'
+import type { Source, BankAccount, BackupInfo } from '@/lib/api'
 import { CURRENCIES } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,11 +36,21 @@ export default function Settings() {
   const [deleteSource, setDeleteSource] = useState<Source | null>(null)
   const [deleteBank, setDeleteBank] = useState<BankAccount | null>(null)
   const [savingCurrency, setSavingCurrency] = useState(false)
+  const [backups, setBackups] = useState<BackupInfo[]>([])
+  const [backupDir, setBackupDir] = useState('')
+  const [backingUp, setBackingUp] = useState(false)
+
+  const loadBackups = () =>
+    dataApi.backups().then(r => {
+      setBackups(r.data.backups)
+      setBackupDir(r.data.directory)
+    })
 
   useEffect(() => {
     settingsApi.get().then(r => setCurrency(r.data.base_currency))
     sourcesApi.list().then(r => setSources(r.data))
     banksApi.list().then(r => setBanks(r.data))
+    loadBackups()
   }, [])
 
   const handleSaveCurrency = async () => {
@@ -98,6 +108,19 @@ export default function Settings() {
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail
       toast(msg || 'Cannot delete bank account', 'error')
+    }
+  }
+
+  const handleBackupNow = async () => {
+    setBackingUp(true)
+    try {
+      await dataApi.createBackup()
+      await loadBackups()
+      toast('Backup created')
+    } catch {
+      toast('Backup failed', 'error')
+    } finally {
+      setBackingUp(false)
     }
   }
 
@@ -193,6 +216,37 @@ export default function Settings() {
             Add
           </Button>
         </div>
+      </section>
+
+      <div className="border-t border-white/[0.05]" />
+
+      {/* Data & backups */}
+      <section>
+        <SectionHeader
+          title="Data & Backups"
+          sub={`A snapshot is taken automatically every day and on shutdown. Stored in ${backupDir || '…'}`}
+        />
+        <div className="flex flex-wrap gap-2 mb-3">
+          <a href="/api/data/export.json" download><Button variant="default" size="md"><Download size={14} />Export JSON</Button></a>
+          <a href="/api/data/export.csv" download><Button variant="default" size="md"><Download size={14} />Export CSV</Button></a>
+          <Button variant="accent" size="md" onClick={handleBackupNow} disabled={backingUp}>
+            {backingUp ? 'Backing up…' : 'Back up now'}
+          </Button>
+        </div>
+        <ListCard>
+          {backups.length === 0 && <p className="px-4 py-5 text-xs text-muted">No backups yet.</p>}
+          {backups.map((b, i) => (
+            <div key={b.name} className={`flex items-center justify-between px-4 py-3 ${i !== backups.length - 1 ? 'border-b border-white/[0.05]' : ''}`}>
+              <div>
+                <span className="text-sm text-ink-2">{b.created_at.replace('T', ' ')}</span>
+                <span className="text-xs text-muted ml-3">{Math.max(1, Math.round(b.size / 1024))} KiB</span>
+              </div>
+              <a href={`/api/data/backups/${b.name}`} download>
+                <Button size="icon" variant="ghost"><Download size={13} /></Button>
+              </a>
+            </div>
+          ))}
+        </ListCard>
       </section>
 
       <ConfirmDialog

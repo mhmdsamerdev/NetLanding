@@ -129,3 +129,14 @@ export const settingsApi = {
   get: () => api.get<Settings>('/settings'),
   update: (base_currency: string) => api.put<Settings>('/settings', { base_currency }),
 }
+
+export interface BackupInfo {
+  name: string
+  size: number
+  created_at: string
+}
+
+export const dataApi = {
+  backups: () => api.get<{ directory: string; backups: BackupInfo[] }>('/data/backups'),
+  createBackup: () => api.post<{ name: string }>('/data/backups'),
+}

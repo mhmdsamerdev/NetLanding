@@ -24,8 +24,13 @@ def _parse_args(argv=None) -> argparse.Namespace:
     parser.add_argument("--no-browser", action="store_true", help="do not open the browser")
     parser.add_argument("--log", action="store_true", help="show debug output (server logs and request access log)")
     parser.add_argument("--version", action="version", version=f"netlanding {__version__}")
-    sub = parser.add_subparsers(dest="command", metavar="{stop}")
+    sub = parser.add_subparsers(dest="command", metavar="{stop,backup,backups,export}")
     sub.add_parser("stop", help="stop the running server")
+    sub.add_parser("backup", help="create a database snapshot now")
+    sub.add_parser("backups", help="list database snapshots")
+    exp = sub.add_parser("export", help="export data to a file")
+    exp.add_argument("--format", choices=["json", "csv"], default="json")
+    exp.add_argument("-o", "--output", help="output path (default: ./netlanding-<date>.<ext>)")
     return parser.parse_args(argv)
 
 
@@ -100,6 +105,46 @@ def _stop() -> int:
     return 0
 
 
+def _backup() -> int:
+    from . import backup
+
+    try:
+        path = backup.create_snapshot("manual")
+    except RuntimeError as exc:
+        print(f"netlanding: {exc}", file=sys.stderr)
+        return 1
+    backup.prune()
+    print(f"Snapshot saved: {path}")
+    return 0
+
+
+def _backups() -> int:
+    from . import backup
+
+    print(f"Backups in {backup.backups_dir()}")
+    for s in backup.list_snapshots():
+        print(f"  {s['name']}  {s['size'] / 1024:.0f} KiB")
+    return 0
+
+
+def _export(args) -> int:
+    from datetime import date
+    from pathlib import Path
+
+    from . import export, models
+    from .database import SessionLocal, engine
+
+    models.Base.metadata.create_all(bind=engine)
+    out = Path(args.output or f"netlanding-{date.today():%Y%m%d}.{args.format}")
+    with SessionLocal() as db:
+        if args.format == "json":
+            out.write_text(json.dumps(export.export_json(db), indent=2, ensure_ascii=False), encoding="utf-8")
+        else:
+            out.write_text(export.export_entries_csv(db), encoding="utf-8-sig", newline="")
+    print(f"Exported to {out}")
+    return 0
+
+
 def _start(args) -> int:
     if not 1 <= args.port <= 65535:
         print(f"netlanding: invalid port {args.port}", file=sys.stderr)
@@ -153,6 +198,12 @@ def main(argv=None) -> int:
     args = _parse_args(argv)
     if args.command == "stop":
         return _stop()
+    if args.command == "backup":
+        return _backup()
+    if args.command == "backups":
+        return _backups()
+    if args.command == "export":
+        return _export(args)
     return _start(args)
 
 

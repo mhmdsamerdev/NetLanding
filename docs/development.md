@@ -48,7 +48,7 @@ uvicorn netlanding.main:app --reload
 
 - API server: `http://127.0.0.1:8000`
 - Interactive docs: `http://127.0.0.1:8000/docs`
-- SQLite database (`netlanding.db`) auto-creates in the working directory on first run
+- SQLite database (`netlanding.db`) auto-creates in `~/.netlanding/` (or `$NETLANDING_DATA_DIR`) on first run; snapshots go in its `backups/` subfolder
 
 ### Terminal 2 — Vite dev server
 
@@ -93,6 +93,7 @@ This produces `dist/netlanding-<version>-py3-none-any.whl` and a `.tar.gz` sdist
 pip install dist/netlanding-*.whl
 netlanding          # opens http://127.0.0.1:8000 in the browser
 netlanding stop     # stop the server (PID tracked in ~/.netlanding/netlanding.pid)
+netlanding backup | backups | export   # data safety (see src/netlanding/backup.py, export.py)
 # flags: --port, --host, --no-browser, --log, --version
 ```
 
@@ -116,7 +117,9 @@ All backend logic lives exclusively in `src/netlanding/`:
 | `database.py` | SQLAlchemy engine, session factory |
 | `models.py` | ORM models |
 | `schemas.py` | Pydantic request/response schemas |
-| `routers/` | One file per resource (`entries`, `sources`, `banks`, `settings`, `dashboard`) |
+| `routers/` | One file per resource (`entries`, `sources`, `banks`, `settings`, `dashboard`, `data`) |
+| `backup.py` | Snapshots via the sqlite3 backup API, integrity check, retention |
+| `export.py` | JSON (versioned, `format`/`version` fields) and CSV export |
 
 Use **relative imports** throughout (`from .database import ...`, `from .. import models`).
 

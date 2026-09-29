@@ -12,6 +12,7 @@ A locally hosted, income tracker for self-employees. Track gross income and all 
 - **Entries** — Full table with search, status/source/date filters, inline edit & delete, paginated
 - **Entry Modal** — Real-time net income calculation, status-driven conditional fields (bank account, withdrawal/cleared dates)
 - **Settings** — Manage sources, bank accounts, base currency
+- **Backups & Export** — Automatic daily/shutdown snapshots in `~/.netlanding/backups/`, one-click JSON (full) and CSV (entries) export
 
 ## First-Time Use
 
@@ -36,6 +37,8 @@ A locally hosted, income tracker for self-employees. Track gross income and all 
 pip install netlanding
 netlanding          # starts the server and opens it in your browser (http://127.0.0.1:8000)
 netlanding stop     # stops the running server
+netlanding backup   # snapshot the database now (also: `backups` to list)
+netlanding export --format json|csv -o FILE
 ```
 
 Options: `--port N`, `--host H`, `--no-browser`, `--log` (debug output), `--version`. Running `netlanding` while it is already running just opens the browser.

@@ -33,6 +33,9 @@ dependencies = [
     "aiofiles>=23.0.0",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+
 [project.urls]
 Homepage = "https://github.com/mhmdsamer-dev/NetLanding"
 Repository = "https://github.com/mhmdsamer-dev/NetLanding"
@@ -58,3 +61,7 @@ include = [
     "README.md",
     "pyproject.toml",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,17 +1,45 @@
+import asyncio
+import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from .database import engine
-from . import models, __version__
-from .routers import entries, sources, banks, settings, dashboard
+from . import models, backup, __version__
+from .routers import entries, sources, banks, settings, dashboard, data
 
 STATIC_DIR = Path(__file__).parent / "static"
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="NetLanding API", version=__version__)
+log = logging.getLogger("netlanding")
+
+
+def _safe(fn, *args):
+    try:
+        fn(*args)
+    except Exception:  # noqa: BLE001 - backups must never take the app down
+        log.exception("backup failed")
+
+
+async def _backup_loop():
+    while True:
+        await asyncio.to_thread(_safe, backup.snapshot_if_due)
+        await asyncio.sleep(3600)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    task = asyncio.create_task(_backup_loop())
+    yield
+    task.cancel()
+    await asyncio.to_thread(_safe, backup.create_snapshot, "shutdown")
+    await asyncio.to_thread(_safe, backup.prune)
+
+
+app = FastAPI(title="NetLanding API", version=__version__, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,6 +54,7 @@ app.include_router(sources.router)
 app.include_router(banks.router)
 app.include_router(settings.router)
 app.include_router(dashboard.router)
+app.include_router(data.router)
 
 
 @app.get("/api/health")
@@ -47,7 +76,7 @@ if STATIC_DIR.is_dir() and (STATIC_DIR / "index.html").exists():
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str):
-        candidate = STATIC_DIR / full_path
-        if candidate.is_file():
+        candidate = (STATIC_DIR / full_path).resolve()
+        if candidate.is_relative_to(STATIC_DIR.resolve()) and candidate.is_file():
             return FileResponse(candidate)
         return FileResponse(STATIC_DIR / "index.html")
