@@ -54,9 +54,13 @@ netlanding = "netlanding.__main__:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/netlanding"]
 
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"
+
 [tool.hatch.build.targets.sdist]
 include = [
     "src/",
+    "hatch_build.py",
     "LICENSE",
     "README.md",
     "pyproject.toml",

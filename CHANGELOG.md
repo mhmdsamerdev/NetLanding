@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 
+- The frontend build is checked (content hash) and rebuilt when stale on `netlanding` start from a checkout and on every `uv build`/`python -m build`.
 - Income sources can store a usual fee (%) and days to clear.
 - Automatic database snapshots and JSON/CSV export (Settings, CLI).
 - Import and restore from the UI: preview, merge or replace, with an automatic safety snapshot and Undo.

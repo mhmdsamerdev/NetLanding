@@ -162,6 +162,10 @@ def _start(args) -> int:
         print(f"netlanding: {args.host}:{args.port} is already in use (try --port)", file=sys.stderr)
         return 1
 
+    from . import frontend_build
+
+    frontend_build.ensure(strict=False)
+
     import uvicorn
 
     url = f"http://{args.host}:{args.port}"

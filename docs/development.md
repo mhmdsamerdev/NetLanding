@@ -18,9 +18,9 @@ NetLanding/
 └── docs/
 ```
 
-> **`src/netlanding/static/`** is populated by the frontend build step.  
-> The `.gitkeep` placeholder keeps the directory tracked in git while  
-> built assets (populated at release time) are not committed.
+> **`src/netlanding/static/`** is the compiled frontend (committed). A hash of the
+> frontend sources is stored in `static/.frontend-hash`; when it no longer matches,
+> the build is stale and is rebuilt automatically (see `src/netlanding/frontend_build.py`).
 
 ---
 
@@ -67,7 +67,12 @@ npm run dev
 
 This produces a single Python package where the React UI is served directly by FastAPI — no separate Node process needed after install.
 
-### 1. Build the frontend
+### 1. Build the frontend (automatic)
+
+`uv build` / `python -m build` (via the `hatch_build.py` hook) and `netlanding` / `uv run netlanding`
+inside a checkout check whether the frontend build is up to date and run `npm run build` if not
+(needs Node 18+; a failed rebuild aborts a package build, but only warns when running the app).
+To build manually:
 
 ```bash
 cd frontend
