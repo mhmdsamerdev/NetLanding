@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/select'
 import { DateInput } from '@/components/ui/date-input'
 import { ConfirmDialog } from '@/components/ui/dialog'
 import EntryModal from '@/components/EntryModal'
+import StatusPopover from '@/components/StatusPopover'
 import { useToast } from '@/components/ui/toast'
 
 const PAGE_SIZE = 20
@@ -42,6 +43,7 @@ export default function Entries() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editEntry, setEditEntry] = useState<Entry | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Entry | null>(null)
+  const [statusTarget, setStatusTarget] = useState<{ entry: Entry; anchor: HTMLElement } | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('date_received')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
 
@@ -206,7 +208,23 @@ export default function Entries() {
                   <span className="tabular-nums text-gold">{formatCurrency(e.net_income, e.gross_currency)}</span>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge className={statusColor(e.status)}>{e.status}</Badge>
+                  {e.status === 'In Bank' ? (
+                    <Badge className={statusColor(e.status)}>{e.status}</Badge>
+                  ) : (
+                    <button
+                      type="button"
+                      title={`Move forward from ${e.status}`}
+                      aria-haspopup="dialog"
+                      className="cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold hover:brightness-125"
+                      onClick={ev => {
+                        ev.stopPropagation()
+                        const anchor = ev.currentTarget
+                        setStatusTarget(t => (t?.entry.id === e.id ? null : { entry: e, anchor }))
+                      }}
+                    >
+                      <Badge className={statusColor(e.status)}>{e.status}<ChevronRight size={11} /></Badge>
+                    </button>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-xs text-muted tabular-nums">{formatDate(e.date_received)}</td>
                 <td className="px-4 py-3">
@@ -264,6 +282,16 @@ export default function Entries() {
           )
         }}
       />
+
+      {statusTarget && (
+        <StatusPopover
+          key={statusTarget.entry.id}
+          entry={statusTarget.entry}
+          anchor={statusTarget.anchor}
+          onClose={() => setStatusTarget(null)}
+          onSaved={saved => setEntries(prev => prev.map(x => x.id === saved.id ? saved : x))}
+        />
+      )}
 
       <ConfirmDialog
         open={!!deleteTarget}
