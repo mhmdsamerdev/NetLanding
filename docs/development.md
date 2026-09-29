@@ -91,8 +91,9 @@ This produces `dist/netlanding-<version>-py3-none-any.whl` and a `.tar.gz` sdist
 
 ```bash
 pip install dist/netlanding-*.whl
-netlanding
-# open http://127.0.0.1:8000
+netlanding          # opens http://127.0.0.1:8000 in the browser
+netlanding stop     # stop the server (PID tracked in ~/.netlanding/netlanding.pid)
+# flags: --port, --host, --no-browser, --log, --version
 ```
 
 ### 4. Upload to PyPI

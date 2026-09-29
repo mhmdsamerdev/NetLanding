@@ -34,9 +34,11 @@ A locally hosted, income tracker for self-employees. Track gross income and all 
 ### PyPI (Recommended)
 ```bash
 pip install netlanding
-netlanding
-http://127.0.0.1:8000
+netlanding          # starts the server and opens it in your browser (http://127.0.0.1:8000)
+netlanding stop     # stops the running server
 ```
+
+Options: `--port N`, `--host H`, `--no-browser`, `--log` (debug output), `--version`. Running `netlanding` while it is already running just opens the browser.
 
 ### Docker
 > [!NOTE]
