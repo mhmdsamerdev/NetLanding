@@ -26,7 +26,7 @@ jobs:
           awk -v h="## $GITHUB_REF_NAME" 'index($0,h)==1 && (length($0)==length(h) || substr($0,length(h)+1,1)==" "){f=1;next} /^## /{f=0} f' CHANGELOG.md > notes.md
           [ -n "$(tr -d '[:space:]' < notes.md)" ] || { echo "CHANGELOG.md has no non-empty '## $GITHUB_REF_NAME' section"; exit 1; }
 
-      - run: uv run pytest -q
+      - run: uv run --extra dev pytest -q
 
       - name: Frontend build is up to date
         run: |
