@@ -104,12 +104,12 @@ netlanding backup | backups | export   # data safety (see src/netlanding/backup.
 
 ### 4. Release (GitHub + PyPI, automated)
 
-1. Bump `version` in `pyproject.toml` and commit.
+1. Bump `version` in `pyproject.toml`, and in `CHANGELOG.md` add a `## vX.Y.Z - YYYY-MM-DD` section (move entries out of `[Unreleased]`, keep an empty `[Unreleased]` on top). Commit.
 2. `git tag vX.Y.Z && git push origin main --tags`
 
 `.github/workflows/release.yml` then checks the tag matches the version, runs the tests, verifies the
 frontend build is up to date, builds the package, publishes to PyPI (Trusted Publishing) and creates
-the GitHub release with the artifacts and generated notes. `ci.yml` runs the tests and the frontend
+the GitHub release with the artifacts, using the matching `CHANGELOG.md` section as notes (the release fails early if it is missing or empty). `ci.yml` runs the tests and the frontend
 check on every push/PR.
 
 One-time setup: add a trusted publisher on PyPI (repo `mhmdsamerdev/NetLanding`, workflow
